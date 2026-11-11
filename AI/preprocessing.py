@@ -20,7 +20,7 @@ print("the data has been read")
 #reviews = df["review"][beginning:]
 #reviews = df["review"]
 
-
+'''
 ##### ОЧИСТКА ДАННЫХ С ПОМОЩЬЮ ИИ ##### (оно работает, но ОООоочень долго. Будет обрабатывать 11 дней весь датасет. только этот этап)
 
 #в отдельном файле будем хранить переменную, которая будет говорить нам сколько отзывов было уже предобработано
@@ -37,14 +37,14 @@ path_to_model = "ai-forever/RuM2M100-1.2B"
 model = M2M100ForConditionalGeneration.from_pretrained(path_to_model) 
 tokenizer = M2M100Tokenizer.from_pretrained(path_to_model, src_lang="ru", tgt_lang="ru")
 
-
+'''
 '''
 print("wiping the previous data")
 proverka = open("/home/fblthp/PYNLP/NLP/AI/proverka.txt", "w")
 proverka.write(" ")
 proverka.close()
 '''
-
+'''
 
 print("correcting reviews using AI")
 
@@ -56,7 +56,7 @@ proverka = open("/home/fblthp/PYNLP/NLP/AI/proverka.txt", "a")
 for i in range(beginning,len(df["review"])): #сделаем предобработку от beginning и до конца
     current = df["review"][i]
     #i.strip()
-    current = re.sub(r"[\n\t]*", " ", current)
+    #current = re.sub(r"[\n\t]*", " ", current) #переносы и табуляцию уже удалил
     encodings = tokenizer(current, return_tensors="pt") 
     generated_tokens = model.generate( **encodings, forced_bos_token_id=tokenizer.get_lang_id("ru")) 
     answer = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True) 
@@ -75,5 +75,25 @@ proverka.close()
 #proverka = open("/home/fblthp/PYNLP/NLP/AI/proverka.txt", "w")
 #proverka.writelines(aifix_revs)
 #proverka.close()
+'''
 
 ##### ЛЕММАТИЗАЦИЯ #####
+
+#нужно перед точкой везде поставить пробел
+def helper(string):
+   return re.sub(r"\.", " . ", string)
+
+df["review"] = df["review"].apply(helper)
+
+from pymorphy3 import MorphAnalyzer
+from nltk import word_tokenize
+
+def tokenize_lemmas(sent, morph=MorphAnalyzer()):
+    return [morph.parse(tok)[0].normal_form 
+            for tok in word_tokenize(sent)]
+
+df["lemm"] = ''
+df["lemm"] = df["review"].map(lambda x: " ".join(tokenize_lemmas(x)))
+
+df.to_csv('/home/fblthp/PYNLP/NLP/AI/lemmatized.csv',index = False, encoding = 'UTF8', sep = '\t')
+#print(df['lemm'][:10])

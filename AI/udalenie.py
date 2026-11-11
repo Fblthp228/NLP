@@ -21,6 +21,10 @@ def hatred_chars(string):
                            "]+", flags=re.UNICODE)
     url_pattern = re.compile(r'https?://\S+|www\.\S+')
     url_pattern.sub(r'', string)
+    #perenosi = re.compile(r'[\n\t]*')
+    #perenosi.sub(r' ', string)
+    #string = re.sub(r"[\n\t]+", " ", string) #почему-то не работает или плохо работает
+    string = "".join(string.splitlines()) #такой способ удаления переносов сработал
     return emoji_pattern.sub(r'', string)
 #passing the emoji function to 'text_rare'
 df['review'] = df['review'].apply(hatred_chars)
@@ -37,7 +41,9 @@ netu_ruskih = list()
 
 for i in range(0,len(reviews)):
     #reviews[i].strip()
-    reviews[i] = re.sub(r"[\n\t]*", " ", reviews[i])
+    #reviews[i] = re.sub(r"  ", " ", reviews[i])
+    #reviews[i] = re.sub(r"\n", " ", reviews[i])
+    #reviews[i] = re.sub(r"\t", " ", reviews[i])
     if(ruski.search(reviews[i]) == None):
         #print("***************************")
         #print(i)
